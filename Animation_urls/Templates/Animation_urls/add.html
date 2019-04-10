@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加</title>
+</head>
+<body>
+<form action="{% url 'website:save' %}" method="post">
+    {% csrf_token %}
+        <input type="hidden" value="{{Animation.id | default:'0'}}" name="Animation_id">
+        <label>动漫名
+            <input type="text" name="title" value={{Animation.title}}>
+        </label>
+        <label>图片网址
+            <input type="text" name="img_website" value="{{Animation.img_website}}">
+        </label>
+        <br/>
+        <label>简介
+            <input type="text" name="content" value="{{Animation.content}}">
+        </label>
+        <br/>
+        <label>网址
+            <input type="text" name="website" value="{{Animation.website}}">
+        </label>
+        <br/>
+    <input type="submit" value="提交">
+</form>
+</body>
+</html>

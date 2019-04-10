@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>动漫</title>
+    {% load staticfiles %}
+     <link rel="stylesheet" type="text/css" href="{% static 'Animation_urls/Animation_urls.css' %}"/>
+     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css">
+</head>
+<body>
+<div>
+
+    <div class="img_1">
+        <a class="a_1" href="{% url 'website:add' 0 %}">添加</a>
+    </div>
+
+    <div class="center">
+        <div class="content">
+        {% for x in Animation.object_list %}
+            <a href="{% url 'website:read' x.id %}?type_id={{type_id | default:'0'}}&page_number={{ Animation.number }}">喜欢({{x.read_num}})</a><br/>
+            <a href="{% url 'website:details' x.id  %}"> <img src="{{x.img_website}}"  width="150px" height="200px"/><br/>
+            {{ x.title }}<br/>
+            </a>
+            <br/>
+        {% endfor %}
+        </div>
+
+<!--
+    <div class="center">
+        <div class="content">
+            <div class="content_1">
+                {% for x in Animation.object_list %}
+                <div class="container">
+                    <div class="card_size">
+                        <div class="card">
+                            <div class="card-header">{{ x.title }}</div>
+                                <a href="{% url 'website:add' x.id %}?page_number={{ Animation.number }}">修改</a>
+                                <a href="{% url 'website:read' x.id %}?type_id={{type_id | default:'0'}}&page_number={{ Animation.number }}">喜欢({{x.read_num}})</a>
+                            <div class="card-body">
+                                <a href="{{ x.website }}" target="_blank">
+                                    <img src="x.img_website"  width="250px" height="100px"/>
+                                </a>
+                            </div>
+                            <div class="card-footer">简介：{{ x.content | safe}}</div>
+
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+-->
+            <div class="screening">
+                <b>筛选</b>
+                <br/>
+                地区： <a href="#">中国</a>   <a href="#">日本</a>
+                <br/>
+                风格：{% if type_id %}
+                        <a href="{% url 'website:Animation_urls' %}">全部</a>
+                      {% else %}
+                        <a style="color:red" href="{% url 'website:Animation_urls' %}">全部</a>
+                      {% endif %}
+                      {% for x in type %}
+                      {% if type_id == x.id %}
+                            <a style="color:red" href="{% url 'website:type' x.id %}">{{ x.type_name }}</a>
+                      {% else %}
+                            <a href="{% url 'website:type' x.id %}">{{ x.type_name }}</a>
+                      {% endif %}
+                      {% endfor %}
+
+                <div>
+                    {% if type_id %}
+                        页码:
+                        {% for x in Animation.paginator.page_range %}
+                            {% if x == Animation.number %}
+                                <a style="color:red" href="{% url 'website:type' type_id %}?page={{x}}">{{ x }}</a>
+                            {% else %}
+                                <a href="{% url 'website:type' type_id %}?page={{x}}">{{ x }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {% if type_id == 0 %}
+                            页码:
+                            {% for x in Animation.paginator.page_range %}
+                                {% if x == Animation.number %}
+                                    <a style="color:red" href="{% url 'website:type' type_id %}?page={{x}}">{{ x }}</a>
+                                {% else %}
+                                    <a href="{% url 'website:type' type_id %}?page={{x}}">{{ x }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            页码:
+                            {% for x in Animation.paginator.page_range %}
+                                {% if x == Animation.number %}
+                                    <a style="color:red" href="?page={{x}}">{{ x }}</a>
+                                {% else %}
+                                    <a href="?page={{x}}">{{ x }}</a>
+                                {% endif %}
+                            {% endfor %}
+
+                         {% endif %}
+                    {% endif %}
+                </div>
+                 <div>
+                    今天热门动漫：<br/>
+                    {% for x in day %}
+                        <a href="{% url 'website:details' x.content_object.pk %}">{{x.content_object}} ({{x.count_num}})</a><br/>
+                    {% empty %}
+                        没有<br/>
+                    {% endfor %}
+                    昨天热门动漫：<br/>
+                    {% for x in yestoday %}
+                        <a href="{% url 'website:details' x.content_object.pk %}">{{x.content_object}} ({{x.count_num}})</a><br/>
+                    {% empty %}
+                        没有<br/>
+                    {% endfor %}
+                    七天排行：<br/>
+                    {% for x in seven_day %}
+                        <a href="{% url 'website:details' x.id %}">{{x.title}} ({{x.total}})</a><br/>
+                    {% empty %}
+                        没有<br/>
+                    {% endfor %}
+                </div>
+            </div>
+    </div>
+</div>
+</body>
+</html>

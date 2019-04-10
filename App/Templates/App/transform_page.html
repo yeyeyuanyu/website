@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form action="{% url 'App:transform_page'  %}" method="post" name="Form" >
+    {% csrf_token %}
+    <label>
+        <textarea style="background:yellow" name="translate1" rows="20" cols="50">{{fate}}</textarea>
+    </label>
+    <label>
+        <textarea style="background:red" name="translate2" rows="20" cols="50">{{html}}</textarea>
+    </label>
+    <br/>
+    <label>
+        <input type="submit" value="点击翻译">
+    </label>
+</form>
+</body>
+</html>

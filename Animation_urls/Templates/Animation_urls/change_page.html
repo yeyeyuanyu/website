@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{user.username}}</title>
+        <script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+
+<body>
+<form id="change_user_form" action=""  method="post">
+              <div class="modal-body">
+                    {% csrf_token %}
+                    {% for field in change_form %}
+                    <label for="{{field.id_for_label}}">{{field.label}}</label>
+                    {{field}}
+                    <p class="text-danger">{{field.errors.as_text}}</p>
+                    {% endfor %}
+                    <span class="pull-right text-danger">{{register_form.non_field_errors}}</span>
+              </div>
+                  <button type="button" id="button_code" class="btn btn-primary pull-left">发送验证码</button>
+                  <button type="submit" class="btn btn-primary pull-right">修改</button>
+</form>
+<script type="text/javascript">
+    $('#id_username').val('{{user.username}}');
+    $('#id_email').val('{{user.email}}');
+
+
+     $('#button_code').click(function(){
+        var email = $('#id_email').val();
+        if(email == ''){
+            $('#error_code').text('邮箱不能为空');
+            return false;
+        }else{
+            $.ajax({
+              url: "{% url 'website:send_code' %}",
+              type: "GET",
+              data: {'email': email},
+              cache: false,
+              success: function(data){
+                if(data['status']=='ERROR'){
+                    alert(data['status']);
+                }else{
+                    alert(data['status']);
+                }
+              },
+            });
+
+            $(this).addClass('disabled');
+            $(this).attr('disabled', true);
+            var time = 60;
+            $(this).text('剩余'+ time + 's');
+            var interval = setInterval(()=>{
+                time--;
+                $('#button_code').text('剩余'+ time + 's');
+                if(time<=0){
+                    clearInterval(interval);
+                    $(this).removeClass('disabled');
+                    $(this).attr('disabled', false);
+                    $(this).text('发送验证码');
+                    return false;
+                }
+            }, 1000);
+        }
+    }
+    );
+
+</script>
+
+</body>
+</html>

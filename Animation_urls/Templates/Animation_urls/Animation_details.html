@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load staticfiles %}
+    {% load comment_tags %}
+    {% load love_tags %}
+     <link rel="stylesheet" type="text/css" href="{% static 'Animation_urls/details.css' %}"/>
+<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+    <script type="text/javascript" src="{%  static 'ckeditor/ckeditor-init.js' %}"></script>
+    <script type="text/javascript" src="{%  static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
+
+    <script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+
+    <title>{{Animation.title}}</title>
+</head>
+<body>
+
+<div style="margin:0 auto; width:80%; min-width:800px ">
+
+    <div style="margin-bottom:3px;height:45px; width:100%;">
+        <ul>
+            <li>
+                <img src="" height="42" width="100"/>
+            </li>
+            <li>
+                <a href="">首页</a>
+            </li>
+            <li class="user">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'website:user_page' %}">{{user.username}}</a>
+                {% else %}
+                    <a href="{% url 'website:login_page' %}?from={{request.get_full_path}}">未登录</a>
+                {% endif %}
+            </li>
+        </ul>
+    </div>
+
+<div style="width:100%; height:270px;margin:0 auto;">
+    <div style="float:left">
+        <a href="{{ Animation.website }}" target="_blank">
+            <img src="{{Animation.img_website}}"  width="200px" height="260px"/>
+        </a>
+    </div>
+
+    <div style="margin-left:300px">
+        <p>{{ Animation.title }}</p>
+        <p>评论({% comment_count Animation %})</p>
+        <p>Love({% read_count Animation %})</p>
+                <div style="margin:10px">
+                    <nav class="Love"  onclick="Love(this, 'animation',{{Animation.id}})">
+                        <span class="glyphicon glyphicon-thumbs-up {% love_active Animation %}"></span>
+                        <span class="love_num">{% love_count Animation %}</span>
+                    </nav>
+                </div>
+        简介：{{ Animation.content |safe}}
+    </div>
+</div>
+
+
+
+<div style="margin:0 auto; border: 1px dashed; padding:2em;">
+    {% if user.is_authenticated %}
+                欢迎评论
+        <form id="comment_form" action="{% url 'comment:update_comment' %}" method="post">
+            {% csrf_token %}
+            {% for filed in comment_form %}
+                {{filed}}
+            {% endfor %}
+            <div>
+                <span style="float:left" id="error"></span>
+                <input style="float:right" type="submit" value="评论" />
+            </div>
+        </form>
+    {% else %}
+        未登录
+    <a href="{% url 'website:login_page' %}?from={{request.get_full_path}}"><input type="button" value="登录" /></a>
+    <span> or </span>
+    <a href="{% url 'website:register' %}?from={{request.get_full_path}}"><input type="button" value="注册" /></a>
+    {% endif %}
+</div>
+
+<div style="margin-top:2em; border: 1px dashed; padding:2em">
+    评论列表<br/>
+    <div id="comment_list">
+    {% for x in comments %}
+        <div id="root_{{x.pk}}">
+            {{x.user }}  {{ x.time|date:"Y-m-d H:i:s"}}
+            <br/>
+            {{x.text |safe}}
+                 <div style="margin:10px">
+                    <nav class="Love" onclick="Love(this, 'comment',{{x.pk}})">
+                        <span class="glyphicon glyphicon-thumbs-up {% love_active x %}"></span>
+                        <span class="love_num">{% love_count x %}</span>
+                    </nav>
+                    <nav style="margin-left:150px;display: inline-block">
+                        <a href="javascript:reply({{x.id}});">
+                            回复
+                        </a>
+                    </nav>
+                 </div>
+
+
+            {% for y in x.root_comment.all %}
+            <div style="margin-left:40px">
+                {{y.user }}回复{{y.reply_to}}  {{ y.time|date:"Y-m-d H:i:s"}}
+                <br/>
+                {{y.text|safe}}
+                <div style="margin:10px">
+                     <nav class="Love" onclick="Love(this, 'comment',{{y.pk}})">
+                        <span class="glyphicon glyphicon-thumbs-up {% love_active y %}"></span>
+                        <span class="love_num">{% love_count y %}</span>
+                    </nav>
+                    <nav style="margin-left:150px;display: inline-block">
+                        <a href="javascript:reply({{y.id}});">
+                            回复
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    {% empty %}
+        暂无评论
+    {% endfor %}
+    </div>
+</div>
+<script type="text/javascript">
+    String.prototype.format = function(){
+        var str = this;
+        for(var i = 0; i<arguments.length; i++)
+        {
+            var str = str.replace(new RegExp('\\{' + i + '\\}', 'g'),arguments[i]);
+        }
+        return str;
+    }
+
+    $("#comment_form").submit(function(){
+
+    if( CKEDITOR.instances['id_text'].document.getBody().getText().trim()=='')
+    {
+        $("#error").text('评论不能为空');
+        return false;
+    }
+    CKEDITOR.instances['id_text'].updateElement() //更新数据到textarea
+    //异步提交
+    $.ajax({
+    url: "{% url 'comment:update_comment' %}",
+    type: 'POST',
+    data: $(this).serialize(),
+    cache: false,
+    success: function(data){
+        console.log(data);
+        if(data['status']=='SUCCESS')
+        {
+            if($("#reply_comment_id").val() == '0')
+            {
+                var comment_list = '<div id="root_{0}">'+
+                                        '{1}'+  '{2}'+
+                                        '<br/>'+
+                                        '{3}' +
+                                             '<div style="margin:10px">' +
+                                                '<nav class="Love" onclick="Love(this, \'comment\',{0})">'+
+                                                    '<span class="glyphicon glyphicon-thumbs-up"></span>'+
+                                                    '<span class="love_num">0</span>'+
+                                                '</nav>'+
+                                                '<nav style="margin-left:150px;display: inline-block">' +
+                                                    '<a href="javascript:reply({0});">'+
+                                                        '回复'+
+                                                    '</a>'+
+                                                '</nav>'+
+                                             '</div>'+
+                                   '</div>'
+                comment_list = comment_list.format(data['pk'], data['user'], data['time'], data['text'], )
+                $("#comment_list").prepend(comment_list);
+            }
+            else
+            {
+                var list = '<div style="margin-left:40px">'+
+                                data['user'] + '回复' + data['reply_to'] + ' '+ data['time'] +
+                                '<br/>' +
+                                data['text'] +
+                                '<div style="margin:10px">' +
+                                     '<nav class="Love" onclick="Love(this, \'comment\',' + data['pk'] + ')">'+
+                                        '<span class="glyphicon glyphicon-thumbs-up"></span>' +
+                                        '<span class="love_num">0</span>' +
+                                    '</nav>' +
+                                    '<nav style="margin-left:150px;display: inline-block">' +
+                                        '<a href="javascript:reply(' + data['pk'] + ');">' +
+                                            '回复'+
+                                        '</a>'+
+                                    '</nav>'+
+                                '</div>'+
+                            '</div>'
+                $("#root_" + data['root_pk']).append(list);
+            }
+            CKEDITOR.instances['id_text'].setData('');
+            $("#reply_comment_id").val('0');
+            $("#error").text('');
+        }else{
+            $("#error").text(data['error']);
+        }
+    },
+    error: function(xhr){
+        console.log(xhr);
+    },
+    });
+    return false;
+    })
+    </script>
+<script type="text/javascript">
+    function reply( reply_comment_id ){
+
+    {% if user.is_authenticated %}
+
+        $("#reply_comment_id").val(reply_comment_id);
+         CKEDITOR.instances['id_text'].focus();
+
+    {% else %}
+        alert('yuo are not login');
+     {% endif %}
+     }
+
+    function Love(html_object, content_type, object_id){
+    var is_love = html_object.getElementsByClassName('active').length == 0;
+        $.ajax({
+           url: '{% url 'nice:update_love' %}',
+           type: 'GET',
+           data: {
+            content_type: content_type,
+            object_id: object_id,
+            is_love: is_love,
+           },
+           cache: false,
+           success: function(data){
+                console.log(data)
+                if(data['status'] == 'SUCCESS'){
+                    var element = $(html_object.getElementsByClassName('glyphicon'));
+                    if(is_love){
+                        element.addClass('active')
+                    }else{
+                        element.removeClass('active')
+                    }
+                    var love = $(html_object.getElementsByClassName('love_num'));
+                    love.text(data['love'])
+                }else{
+                $("#error").text(data['error']);
+                    alert(data['message']);
+                }
+           },
+           error: function(xhr){
+                console.log(data);
+           },
+        });
+    }
+</script>
+</div>
+</body>
+</html>
