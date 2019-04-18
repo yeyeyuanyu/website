@@ -28,7 +28,7 @@
         {% endif %}
     </li>
     <li>
-        <a href="{% url 'website:change_page' %}?from={{request.get_full_path}}">
+        <a href="javascript:change_user();">
             修改个人信息
         </a>
     </li>
@@ -59,7 +59,7 @@
           <span id="error_danger" class="text-danger"></span>
       </div>
 
-        <form id="change_user_form" action=""  method="post">
+        <form id="change_user_form" action="{% url 'website:change_user' %}?from={{request.get_full_path}}"  method="post">
               <div class="modal-body">
                     {% csrf_token %}
                     {% for field in change_form %}
@@ -70,65 +70,23 @@
               </div>
 
               <div class="modal-footer">
-                  <button type="button" id="button_code" class="btn btn-primary pull-left">发送验证码</button>
-                  <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                  <button type="submit" class="btn btn-primary">修改</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="submit" class="btn btn-primary">修改</button>
               </div>
         </form>
     </div>
   </div>
 </div>
 <script type="text/javascript">
-    $('#button_code').click(function(){
-        var email = $('#id_email').val();
-        if(email == ''){
-            $('#error_code').text('邮箱不能为空');
-            return false;
-        }else{
-            $.ajax({
-              url: "{% url 'website:send_code' %}",
-              type: "GET",
-              data: {'email': email},
-              cache: false,
-              success: function(data){
-                if(data['status']=='ERROR'){
-                    alert(data['status']);
-                }else{
-                    alert(data['status']);
-                }
-              },
-            });
-
-            $(this).addClass('disabled');
-            $(this).attr('disabled', true);
-            var time = 60;
-            $(this).text('剩余'+ time + 's');
-            var interval = setInterval(()=>{
-                time--;
-                $('#button_code').text('剩余'+ time + 's');
-                if(time<=0){
-                    clearInterval(interval);
-                    $(this).removeClass('disabled');
-                    $(this).attr('disabled', false);
-                    $(this).text('发送验证码');
-                    return false;
-                }
-            }, 1000);
-        }
-    }
-    );
-
     function change_user(){
         $('#id_username').val('{{user.username}}');
         $('#id_email').val('{{user.email}}');
-        //var list = '<button type="button" id="button_code" class="btn btn-default" data-dismiss="modal">发送验证码</button>' + '</br>';
-        //$('#id_authenticate_code').prepend(list);
         $('#change_user').modal('show');
     }
 
     $("#change_user_form").submit(function(){
         $.ajax({
-           url: '',
+           url: '{% url 'website:change_user' %}',
            type: 'POST',
            data: $(this).serialize(),
            cache: false,

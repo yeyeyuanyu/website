@@ -82,12 +82,7 @@ class ChangeForm(forms.Form):
     email = forms.CharField(label='邮箱', required=False,
                             max_length=20,
                             widget=forms.EmailInput(
-                                attrs={'class': 'form-control', 'placeholder': '请输入邮箱(非必填)', 'value': ''}))
-
-    authenticate_code = forms.CharField(label='验证码', required=False,
-                                        max_length=20,
-                                        widget=forms.TextInput(
-                                            attrs={'class': 'form-control', 'placeholder': '请输入验证码(非必填)'}))
+                                attrs={'class': 'form-control', 'placeholder': '请输入邮箱', 'value': ''}))
 
     password = forms.CharField(label='密码', required=True,
                                min_length=6,
@@ -118,7 +113,6 @@ class ChangeForm(forms.Form):
                 email = None
             if User.objects.filter(email=email).exists():
                 raise forms.ValidationError('email已存在')
-
         return email
 
     def clean_password_again(self):
@@ -128,13 +122,3 @@ class ChangeForm(forms.Form):
         if password != password_again:
             raise forms.ValidationError('密码不一致')
         return password_again
-
-    def clean_authenticate_code(self):
-        code = self.cleaned_data['authenticate_code']
-        email = self.cleaned_data['email']
-        if code == '':
-            raise forms.ValidationError('验证码不能为空')
-        if email != '':
-            if code != self.request.session.get('email_code', ''):
-                raise forms.ValidationError('验证码错误')
-        return code
