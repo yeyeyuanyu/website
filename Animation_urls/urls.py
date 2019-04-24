@@ -15,8 +15,10 @@ urlpatterns = [
     path('Animation_urls/details/<int:Animation_id>/', views.details, name='details'),
     # path('website/login', views.login, name='login'),
     path('register/', views.register, name='register'),
-    path('change_user/', views.change_user, name='change_user'),
+    path('change_page/', views.change_page, name='change_page'),
+    # path('change_user/', views.change_user, name='change_user'),
     path('login_page/', views.login_page, name='login_page'),
+    path('code/', views.send_code, name='send_code'),
     # include在主路由（urls）的路径中包含应用中的路由
     # namespace是命名空间
 ]

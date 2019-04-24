@@ -17,7 +17,7 @@
 
     <script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
 
-    <title>title</title>
+    <title>{{Animation.title}}</title>
 </head>
 <body>
 
@@ -33,7 +33,7 @@
             </li>
             <li class="user">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'website:user_page' %}?from={{request.get_full_path}}">{{user.username}}</a>
+                    <a href="{% url 'website:user_page' %}">{{user.username}}</a>
                 {% else %}
                     <a href="{% url 'website:login_page' %}?from={{request.get_full_path}}">未登录</a>
                 {% endif %}

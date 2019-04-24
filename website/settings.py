@@ -79,14 +79,25 @@ WSGI_APPLICATION = 'website.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+'''
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'mysite_db',
+        'USER': 'yuanyu',
+        'PASSWORD': '2469030',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -113,7 +124,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # 后台管理的语言
 LANGUAGE_CODE = 'zh_hans'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -163,10 +175,21 @@ CKEDITOR_CONFIGS = {
         'resize_enabled': False,
     }
 }
-# djangoshujuku缓存设置
+# django shujuku缓存设置
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'my_cache_table'
 }
 }
+
+
+# 发送邮件配置
+# https://docs.djangoproject.com
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.qq.com'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = '878928552@qq.com'
+EMAIL_HOST_PASSWORD = 'qwsyhearjnmsbchg'  # 授权码
+EMAIL_SUBJECT_PREFIX = '[YY的个人博客]'
+EMAIL_USE_TLS = True  # 与SMTP服务器通信时，是否启动TLS链接

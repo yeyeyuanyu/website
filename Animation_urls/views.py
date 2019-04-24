@@ -10,7 +10,9 @@ from comment.models import Comment
 from comment.forms import CommentForm
 from .forms import LoginForm, RegForm, ChangeForm
 from django.http import JsonResponse
-from django import forms
+from django.core.mail import send_mail
+import string
+import random
 # from django.db.models import Count
 
 # Create your views here.
@@ -27,42 +29,113 @@ def user_page(request):
     return render(request, 'Animation_urls/user_page.html', dictionary)
 
 
+def change_page(request):
+    dictionary = {}
+    if request.method == 'POST':
+        data = {}
+        change_form = ChangeForm(request.POST, request=request)
+        dictionary['change_form'] = change_form
+
+        if change_form.is_valid():
+
+            username = change_form.cleaned_data['username']
+            email = change_form.cleaned_data['email']
+            password = change_form.cleaned_data['password']
+
+            user = request.user
+            '''
+            if username != user.username:
+                if User.objects.filter(username=username).exists():
+                    raise forms.ValidationError('用户名已存在')
+            if email != user.email:
+                if User.objects.filter(email=email).exists():
+                    raise forms.ValidationError('邮箱已绑定')
+            '''
+            user = User.objects.get(username=user.username)
+            user.username = username
+            if email is None or '':
+                pass
+            else:
+                user.email = email
+            user.set_password(password)
+            user.save()
+            del request.session['email_code']
+
+            user = auth.authenticate(username=username, password=password)
+            auth.login(request, user)
+            # return redirect(request.GET.get('from', reverse('website:home')))
+            return redirect(request.GET.get('from', reverse('website:home')))
+    else:
+        dictionary['change_form'] = ChangeForm()
+        return render(request, 'Animation_urls/change_page.html', dictionary)
+    return render(request, 'Animation_urls/change_page.html', dictionary)
+
+
+'''
 def change_user(request):
     dictionary = {}
     data = {}
-    data['status'] = "ERROR"
-    dictionary['change_form'] = ChangeForm()
-
     change_form = ChangeForm(request.POST, request=request)
+    dictionary['change_form'] = change_form
 
     if change_form.is_valid():
+
         username = change_form.cleaned_data['username']
         email = change_form.cleaned_data['email']
         password = change_form.cleaned_data['password']
 
         user = request.user
-        '''
+        
+        
+        
+        
         if username != user.username:
             if User.objects.filter(username=username).exists():
                 raise forms.ValidationError('用户名已存在')
         if email != user.email:
             if User.objects.filter(email=email).exists():
                 raise forms.ValidationError('邮箱已绑定')
-        '''
+ 
+        data['status'] = "SUCCESS"
         user = User.objects.get(username=user.username)
         user.username = username
-        if email is None:
-            pass
+        if email is None or '':
+            return redirect(request.GET.get('from', reverse('website:home')))
         else:
             user.email = email
+            authenticate_code = change_form.cleaned_data['authenticate_code']
+            if authenticate_code == '':
+                data['status'] = "ERROR"
+                return render(request, 'Animation_urls/change_page.html', dictionary)
+            else:
+                pass
         user.set_password(password)
         user.save()
-        data['status'] = "SUCCESS"
 
         user = auth.authenticate(username=username, password=password)
         auth.login(request, user)
-        return JsonResponse(data)
         # return redirect(request.GET.get('from', reverse('website:home')))
+    return render(request, 'Animation_urls/change_page.html', dictionary)
+'''
+
+
+def send_code(request):
+    data = {}
+    email = request.GET.get('email', '')
+    if email != '':
+        code = random.sample(string.ascii_letters + string.digits, 5)
+        code = ''.join(code)
+        request.session['email_code'] = code
+        send_mail(
+            '绑定邮箱',  # Subject here
+            '验证码: %s ' % code,  # Here is the message
+            '878928552@qq.com',
+            [email],
+            fail_silently=False,
+        )
+        data['status'] = 'SUCCESS'
+    else:
+        data['status'] = 'ERROR'
     return JsonResponse(data)
 
 
